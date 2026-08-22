@@ -1,8 +1,10 @@
 import { ThemeProvider, createTheme } from "@mui/material";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { RWalk } from "./RWalk";
+
+vi.mock("../three/WalkScene", () => ({ default: () => null }));
 
 function renderWalk() {
     return render(<ThemeProvider theme={createTheme()}><RWalk /></ThemeProvider>);
@@ -84,5 +86,33 @@ describe("RWalk", () => {
         await userEvent.click(screen.getByRole("button", { name: "Forward 1" }));
         await userEvent.click(screen.getByRole("button", { name: "Start again" }));
         expect(screen.getByText("0 / 1000")).toBeInTheDocument();
+    });
+
+    it("returns to the start when the walk changes", async () => {
+        renderWalk();
+        const forward = screen.getByRole("button", { name: "Forward 1" });
+        await userEvent.click(forward);
+        await userEvent.click(forward);
+        await userEvent.click(forward);
+        fireEvent.change(screen.getByLabelText("Seed value"), { target: { value: "99" } });
+        expect(screen.getByText("0 / 1000")).toBeInTheDocument();
+    });
+
+    it("keeps its place when only the view changes", async () => {
+        renderWalk();
+        const forward = screen.getByRole("button", { name: "Forward 1" });
+        await userEvent.click(forward);
+        await userEvent.click(forward);
+        await userEvent.click(forward);
+
+        await userEvent.click(screen.getByRole("switch", { name: "Stable limits" }));
+
+        expect(screen.getByText("2 / 1000")).toBeInTheDocument();
+    });
+
+    it("leaves the canvas behind in three dimensions", async () => {
+        const { container } = renderWalk();
+        await userEvent.click(screen.getByRole("button", { name: "3D" }));
+        expect(container.querySelector("canvas")).not.toBeInTheDocument();
     });
 });

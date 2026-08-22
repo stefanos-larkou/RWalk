@@ -26,6 +26,18 @@ describe("layoutFor", () => {
         expect(view.scale.x).toBeGreaterThan(view.scale.y);
     });
 
+    it("centres a walk that has not moved yet", () => {
+        const view = layoutFor({ minX: 0, maxX: 0, minY: 0, maxY: 0 }, AVAILABLE, true);
+        const origin = toPixel(view, 0, 0);
+        expect(origin.x).toBeCloseTo(AVAILABLE.x / 2);
+        expect(origin.y).toBeCloseTo(AVAILABLE.y / 2);
+    });
+
+    it("centres an axis the walk has not moved along", () => {
+        const view = layoutFor({ minX: 0, maxX: 100, minY: 0, maxY: 0 }, AVAILABLE, false);
+        expect(toPixel(view, 0, 0).y).toBeCloseTo(AVAILABLE.y / 2);
+    });
+
     it("survives a walk that never moves", () => {
         const view = layoutFor({ minX: 0, maxX: 0, minY: 0, maxY: 0 }, AVAILABLE, true);
         expect(Number.isFinite(view.scale.x)).toBe(true);
