@@ -48,7 +48,9 @@ export const contexts: RecordingContext[] = [];
 const held = new WeakMap<HTMLCanvasElement, RecordingContext>();
 
 export function stubCanvas(): void {
-    HTMLCanvasElement.prototype.getContext = (function getContext(this: HTMLCanvasElement) {
+    HTMLCanvasElement.prototype.getContext = (function getContext(this: HTMLCanvasElement, kind: string) {
+        if (kind !== "2d") return null;
+
         const existing = held.get(this);
         if (existing) return existing.api;
 

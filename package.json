@@ -26,7 +26,8 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@stefanos-larkou/sim-kit": "github:stefanos-larkou/sim-kit"
+        "@stefanos-larkou/sim-kit": "github:stefanos-larkou/sim-kit",
+        "three": "^0.185.1"
     },
     "peerDependencies": {
         "@emotion/react": ">=11.0.0",
@@ -49,6 +50,7 @@
         "@types/node": "^24.13.3",
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
+        "@types/three": "^0.185.4",
         "@vitejs/plugin-react": "^6.0.4",
         "eslint": "^10.8.0",
         "eslint-plugin-react-hooks": "^7.1.1",
