@@ -11,11 +11,11 @@ import { projectionFor } from "../render/projection";
 interface WalkCanvasProps {
     tracks: Track[];
     bounds: Bounds;
-    steps: number;
+    span: number;
     upTo: number;
 }
 
-export function WalkCanvas({ tracks, bounds, steps, upTo }: WalkCanvasProps) {
+export function WalkCanvas({ tracks, bounds, span, upTo }: WalkCanvasProps) {
     const areaRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const contextRef = useRef<CanvasRenderingContext2D | undefined>(undefined);
@@ -24,8 +24,8 @@ export function WalkCanvas({ tracks, bounds, steps, upTo }: WalkCanvasProps) {
 
     const dimensions = tracks[0]?.dimensions ?? 1;
     const view = useMemo(
-        () => layoutFor(worldBox(bounds, steps, dimensions), available, dimensions > 1),
-        [bounds, steps, dimensions, available]
+        () => layoutFor(worldBox(bounds, span, dimensions), available, dimensions > 1),
+        [bounds, span, dimensions, available]
     );
     const projection = useMemo(() => projectionFor(dimensions), [dimensions]);
     const colours = useMemo(

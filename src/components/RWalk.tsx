@@ -5,13 +5,16 @@ import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import { Box, FormControlLabel, IconButton, Slider, Stack, Switch, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
 import { ControlSlider, EMPTY_INDEX, NumberField, lastIndex, usePersistedFlag, usePersistedNumber, usePlayback } from "@stefanos-larkou/sim-kit";
-import { useMemo } from "react";
+import { lazy, Suspense, useCallback, useMemo } from "react";
+import type { ChangeEvent, MouseEvent } from "react";
 import { CONTROLS_WIDTH, DEFAULT_DIMENSIONS, DEFAULT_SEED, DEFAULT_SPEED_SLIDER, DEFAULT_STEPS, DEFAULT_STEP_SIZE, DEFAULT_WALKERS, MAX_DIMENSIONS, MAX_SEED, MAX_STEPS, MAX_STEP_SIZE, MAX_WALKERS, MIN_DIMENSIONS, MIN_SEED, MIN_STEPS, MIN_STEP_SIZE, MIN_WALKERS, SLIDER_MAX, SLIDER_MIN, TRANSPORT_BUTTONS_WIDTH } from "../core/constants";
 import { stepCounter } from "../core/counter";
 import { speedFrom } from "../core/scales";
 import { DIAGONALS_KEY, DIMENSIONS_KEY, SEED_KEY, SPEED_KEY, STABLE_LIMITS_KEY, STEPS_KEY, STEP_SIZE_KEY, WALKERS_KEY } from "../core/storage";
 import { useWalkScene } from "../hooks/useWalkScene";
 import { WalkCanvas } from "./WalkCanvas";
+
+const WalkScene = lazy(() => import("../three/WalkScene"));
 
 const LABELS = {
     dimensions: "Dimensions",
@@ -53,6 +56,33 @@ export function RWalk() {
     const flat = dimensions === MIN_DIMENSIONS;
     const scene = useWalkScene({ dimensions, walkers, steps, diagonals, seed, stableLimits, upTo });
 
+    const changeDimensions = useCallback((_event: MouseEvent<HTMLElement>, next: string | null) => {
+        if (!next) return;
+
+        setDimensions(Number(next));
+        playback.reset();
+    }, [setDimensions, playback]);
+
+    const changeWalkers = useCallback((value: number) => {
+        setWalkers(value);
+        playback.reset();
+    }, [setWalkers, playback]);
+
+    const changeSteps = useCallback((value: number) => {
+        setSteps(value);
+        playback.reset();
+    }, [setSteps, playback]);
+
+    const changeSeed = useCallback((value: number) => {
+        setSeed(value);
+        playback.reset();
+    }, [setSeed, playback]);
+
+    const changeDiagonals = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+        setDiagonals(event.target.checked);
+        playback.reset();
+    }, [setDiagonals, playback]);
+
     return (
         <Box
             sx={{
@@ -77,7 +107,7 @@ export function RWalk() {
                         exclusive
                         fullWidth
                         value={String(dimensions)}
-                        onChange={(_event, next) => next && setDimensions(Number(next))}
+                        onChange={changeDimensions}
                         aria-label={LABELS.dimensions}
                     >
                         <ToggleButton value="1">1D</ToggleButton>
@@ -87,18 +117,18 @@ export function RWalk() {
                 </Stack>
 
                 <ControlSlider label={LABELS.speed} value={speedSlider} min={SLIDER_MIN} max={SLIDER_MAX} onChange={setSpeedSlider} />
-                <ControlSlider label={LABELS.walkers} value={walkers} min={MIN_WALKERS} max={MAX_WALKERS} onChange={setWalkers} />
-                <ControlSlider label={LABELS.steps} value={steps} min={MIN_STEPS} max={MAX_STEPS} onChange={setSteps} />
+                <ControlSlider label={LABELS.walkers} value={walkers} min={MIN_WALKERS} max={MAX_WALKERS} onChange={changeWalkers} />
+                <ControlSlider label={LABELS.steps} value={steps} min={MIN_STEPS} max={MAX_STEPS} onChange={changeSteps} />
 
                 <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                     <Typography variant="body1" color="text.secondary" sx={{ width: 96 }}>{LABELS.seed}</Typography>
-                    <NumberField label={LABELS.seed} value={seed} min={MIN_SEED} max={MAX_SEED} onChange={setSeed} />
+                    <NumberField label={LABELS.seed} value={seed} min={MIN_SEED} max={MAX_SEED} onChange={changeSeed} />
                 </Stack>
 
                 <Tooltip describeChild title={flat ? HINTS.diagonalsFlat : HINTS.diagonals} placement="top">
                     <Box sx={{ alignSelf: "center" }}>
                         <FormControlLabel
-                            control={<Switch checked={diagonals && !flat} disabled={flat} onChange={event => setDiagonals(event.target.checked)} />}
+                            control={<Switch checked={diagonals && !flat} disabled={flat} onChange={changeDiagonals} />}
                             label={LABELS.diagonals}
                             labelPlacement="start"
                             sx={{ mx: 0 }}
@@ -116,7 +146,13 @@ export function RWalk() {
             </Stack>
 
             <Box sx={{ gridArea: "walk", display: "flex", minHeight: 0, minWidth: 0 }}>
-                <WalkCanvas tracks={scene.tracks} bounds={scene.bounds} steps={steps} upTo={upTo} />
+                {dimensions === MAX_DIMENSIONS
+                    ? (
+                        <Suspense fallback={null}>
+                            <WalkScene tracks={scene.tracks} bounds={scene.bounds} upTo={upTo} />
+                        </Suspense>
+                    )
+                    : <WalkCanvas tracks={scene.tracks} bounds={scene.bounds} span={scene.span} upTo={upTo} />}
             </Box>
 
             <Box sx={{ gridArea: "transport", display: "flex", flexDirection: "column", alignItems: "center", gap: 1, width: "100%", minWidth: 0 }}>

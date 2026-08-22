@@ -16,7 +16,7 @@ function renderCanvas(upTo: number) {
 
     return render(
         <ThemeProvider theme={createTheme()}>
-            <WalkCanvas tracks={tracks} bounds={bounds} steps={20} upTo={upTo} />
+            <WalkCanvas tracks={tracks} bounds={bounds} span={20} upTo={upTo} />
         </ThemeProvider>
     );
 }
@@ -47,7 +47,7 @@ describe("WalkCanvas", () => {
         const bounds = boundsFor(tracks).at(-1) ?? { min: [0, 0], max: [0, 0] };
         rerender(
             <ThemeProvider theme={createTheme()}>
-                <WalkCanvas tracks={tracks} bounds={bounds} steps={20} upTo={15} />
+                <WalkCanvas tracks={tracks} bounds={bounds} span={20} upTo={15} />
             </ThemeProvider>
         );
         expect(contexts.at(-1)?.named("lineTo").length ?? 0).toBeGreaterThan(before);

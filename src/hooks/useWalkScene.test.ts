@@ -26,6 +26,18 @@ describe("useWalkScene", () => {
         expect(late.bounds).not.toEqual(early.bounds);
     });
 
+    it("spans the whole run with stable limits", () => {
+        expect(scene({ stableLimits: true, upTo: 10 }).span).toBe(100);
+    });
+
+    it("spans only what has been walked when limits are not stable", () => {
+        expect(scene({ stableLimits: false, upTo: 10 }).span).toBe(10);
+    });
+
+    it("never spans nothing before the walk has started", () => {
+        expect(scene({ stableLimits: false, upTo: -1 }).span).toBeGreaterThan(0);
+    });
+
     it("repeats exactly for the same seed", () => {
         expect(scene().tracks[0]?.positions).toEqual(scene().tracks[0]?.positions);
     });
