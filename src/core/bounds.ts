@@ -21,3 +21,9 @@ export function boundsFor(tracks: Track[]): Bounds[] {
         return { min: [...min], max: [...max] };
     });
 }
+
+export function anchoredAtOrigin(bounds: Bounds): Bounds {
+    const reach = bounds.min.map((value, axis) => Math.max(Math.abs(value), Math.abs(bounds.max[axis] ?? 0)));
+
+    return { min: reach.map(value => -value), max: [...reach] };
+}
