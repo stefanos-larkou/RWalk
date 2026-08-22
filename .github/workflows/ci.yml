@@ -1,0 +1,22 @@
+name: CI
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24
+                  cache: npm
+            - run: git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+            # Scripts must run so the sim-kit git dependency builds its dist. That also runs this
+            # package's own prepare, which is the build - hence no separate build step below.
+            - run: npm ci
+            - run: npm run lint
+            - run: npm test
