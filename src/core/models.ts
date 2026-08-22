@@ -1,3 +1,5 @@
+import type { Pixel } from "@stefanos-larkou/sim-kit";
+
 export interface WalkOptions {
     dimensions: number;
     steps: number;
@@ -12,4 +14,17 @@ export interface Track {
 export interface Bounds {
     readonly min: number[];
     readonly max: number[];
+}
+
+export interface Box {
+    readonly minX: number;
+    readonly maxX: number;
+    readonly minY: number;
+    readonly maxY: number;
+}
+
+export interface ViewLayout {
+    readonly scale: Pixel;
+    readonly origin: Pixel;
+    readonly canvas: Pixel;
 }

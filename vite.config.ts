@@ -8,7 +8,7 @@ export default defineConfig({
         dts({
             tsconfigPath: "tsconfig.app.json",
             include: ["src"],
-            exclude: ["src/dev", "**/*.test.ts", "**/*.test.tsx", "src/test-setup.ts"]
+            exclude: ["src/dev", "**/*.test.ts", "**/*.test.tsx", "src/test-setup.ts", "src/test-support.ts"]
         })
     ],
     build: {

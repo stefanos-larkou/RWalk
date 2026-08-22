@@ -2,13 +2,14 @@ import { resetObservers, stubResizeObserver } from "@stefanos-larkou/sim-kit/tes
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach } from "vitest";
+import { resetContexts, stubCanvas } from "./test-support";
 
 stubResizeObserver();
-
-HTMLCanvasElement.prototype.getContext = () => null;
+stubCanvas();
 
 afterEach(() => {
     cleanup();
     localStorage.clear();
     resetObservers();
+    resetContexts();
 });
