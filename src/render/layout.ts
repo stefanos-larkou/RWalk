@@ -17,22 +17,29 @@ export function worldBox(bounds: Bounds, steps: number, dimensions: number): Box
 }
 
 export function layoutFor(box: Box, available: Pixel, isotropic: boolean): ViewLayout {
-    const width = Math.max(box.maxX - box.minX, 1);
-    const height = Math.max(box.maxY - box.minY, 1);
+    const across = spread(box.minX, box.maxX);
+    const down = spread(box.minY, box.maxY);
     const usable = { x: Math.max(available.x - PADDING * 2, 1), y: Math.max(available.y - PADDING * 2, 1) };
 
-    const fit = { x: usable.x / width, y: usable.y / height };
+    const fit = { x: usable.x / across.extent, y: usable.y / down.extent };
     const even = Math.min(fit.x, fit.y);
     const scale = isotropic ? { x: even, y: even } : fit;
 
     return {
         scale,
         origin: {
-            x: PADDING + (usable.x - width * scale.x) / 2 - box.minX * scale.x,
-            y: PADDING + (usable.y - height * scale.y) / 2 + box.maxY * scale.y
+            x: PADDING + (usable.x - across.extent * scale.x) / 2 - across.min * scale.x,
+            y: PADDING + (usable.y - down.extent * scale.y) / 2 + down.max * scale.y
         },
         canvas: available
     };
+}
+
+function spread(min: number, max: number): { min: number; max: number; extent: number; } {
+    const extent = max - min;
+    if (extent > 0) return { min, max, extent };
+
+    return { min: min - 0.5, max: max + 0.5, extent: 1 };
 }
 
 export function toPixel(view: ViewLayout, x: number, y: number): Pixel {
