@@ -2,6 +2,7 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import { Box, CssBaseline, IconButton, ThemeProvider, createTheme } from "@mui/material";
 import { useMemo, useState } from "react";
+import { RWalk } from "../components/RWalk";
 
 export function Harness() {
     const [mode, setMode] = useState<"light" | "dark">("dark");
@@ -19,6 +20,7 @@ export function Harness() {
                         {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
                     </IconButton>
                 </Box>
+                <RWalk />
             </Box>
         </ThemeProvider>
     );

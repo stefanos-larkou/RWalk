@@ -1,3 +1,4 @@
+export { RWalk } from "./components/RWalk";
 export { offsetsFor } from "./core/offsets";
 export { boundsFor } from "./core/bounds";
 export { squaredDistanceAt } from "./core/displacement";
