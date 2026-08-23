@@ -51,7 +51,7 @@ const HINTS = {
 const NO_SLIDER_EASING = { "& .MuiSlider-thumb, & .MuiSlider-track": { transition: "none" } };
 
 const SWAP = { enter: 320, exit: 220 };
-const PANE = { position: "absolute", inset: 0, display: "flex", minHeight: 0, minWidth: 0 } as const;
+const PANE = { gridArea: "1 / 1", display: "flex", minHeight: 0, minWidth: 0 } as const;
 
 export function RWalk() {
     const [dimensions, setDimensions] = usePersistedNumber(DIMENSIONS_KEY, DEFAULT_DIMENSIONS, MIN_DIMENSIONS, MAX_DIMENSIONS);
@@ -229,7 +229,7 @@ export function RWalk() {
                 </Tooltip>
             </Stack>
 
-            <Box sx={{ gridArea: "walk", display: "flex", minHeight: 0, minWidth: 0 }}>
+            <Box sx={{ gridArea: "walk", display: "flex", minHeight: { xs: "50vh", md: 0 }, minWidth: 0 }}>
                 {dimensions === MAX_DIMENSIONS
                     ? (
                         <Suspense fallback={null}>
@@ -300,7 +300,7 @@ export function RWalk() {
     );
 
     return (
-        <Box sx={{ position: "relative", flex: 1, minHeight: 0, minWidth: 0, display: "flex" }}>
+        <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, display: "grid", gridTemplateColumns: "minmax(0, 1fr)" }}>
             <Fade in={!measuring} timeout={SWAP}>
                 <Box sx={PANE}>{watched}</Box>
             </Fade>
