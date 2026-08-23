@@ -149,10 +149,10 @@ export function RWalk() {
                 {dimensions === MAX_DIMENSIONS
                     ? (
                         <Suspense fallback={null}>
-                            <WalkScene tracks={scene.tracks} bounds={scene.bounds} upTo={upTo} />
+                            <WalkScene tracks={scene.tracks} bounds={scene.bounds} upTo={upTo} stableLimits={stableLimits} />
                         </Suspense>
                     )
-                    : <WalkCanvas tracks={scene.tracks} bounds={scene.bounds} span={scene.span} upTo={upTo} />}
+                    : <WalkCanvas tracks={scene.tracks} bounds={scene.bounds} span={scene.span} upTo={upTo} stableLimits={stableLimits} />}
             </Box>
 
             <Box sx={{ gridArea: "transport", display: "flex", flexDirection: "column", alignItems: "center", gap: 1, width: "100%", minWidth: 0 }}>

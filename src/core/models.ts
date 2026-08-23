@@ -26,5 +26,6 @@ export interface Box {
 export interface ViewLayout {
     readonly scale: Pixel;
     readonly origin: Pixel;
+    readonly content: Pixel;
     readonly canvas: Pixel;
 }

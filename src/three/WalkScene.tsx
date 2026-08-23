@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { BufferAttribute, BufferGeometry, Group, Line, LineBasicMaterial, LineSegments, OrthographicCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { Bounds, Track } from "../core/models";
+import { MIN_ZOOM } from "../render/layout";
 import { FRAME_OPACITY, GRID_OPACITY, frameColour, labelColour, walkerColour } from "../render/palette";
 import { type Bin, createBin } from "./bin";
 import { edgeTicksFor, labelsFor, paneGridFor } from "./axes";
@@ -15,6 +16,7 @@ interface WalkSceneProps {
     tracks: Track[];
     bounds: Bounds;
     upTo: number;
+    stableLimits: boolean;
 }
 
 interface Held {
@@ -44,7 +46,7 @@ function joined(parts: Float32Array[]): Float32Array {
     return whole;
 }
 
-export default function WalkScene({ tracks, bounds, upTo }: WalkSceneProps) {
+export default function WalkScene({ tracks, bounds, upTo, stableLimits }: WalkSceneProps) {
     const areaRef = useRef<HTMLDivElement>(null);
     const heldRef = useRef<Held | undefined>(undefined);
     const available = useElementSize(areaRef);
@@ -76,6 +78,7 @@ export default function WalkScene({ tracks, bounds, upTo }: WalkSceneProps) {
 
         camera.position.set(...VIEW_DIRECTION);
         controls.enablePan = false;
+        controls.minZoom = MIN_ZOOM;
         controls.cursorStyle = "grab";
         controls.addEventListener("change", () => renderer.render(scene, camera));
         area.appendChild(renderer.domElement);
@@ -89,6 +92,15 @@ export default function WalkScene({ tracks, bounds, upTo }: WalkSceneProps) {
             heldRef.current = undefined;
         };
     }, []);
+
+    useEffect(() => {
+        const held = heldRef.current;
+        if (!held) return;
+
+        held.camera.zoom = MIN_ZOOM;
+        held.camera.updateProjectionMatrix();
+        held.renderer.render(held.scene, held.camera);
+    }, [tracks, stableLimits]);
 
     useEffect(() => {
         const held = heldRef.current;
