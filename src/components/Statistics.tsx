@@ -20,7 +20,7 @@ interface StatisticsProps {
     samples: number;
 }
 
-export function Statistics({ dimensions, steps, diagonals, seed, samples }: StatisticsProps) {
+export default function Statistics({ dimensions, steps, diagonals, seed, samples }: StatisticsProps) {
     const mode = useThemeMode();
 
     const measuring = useDeferredValue(samples);

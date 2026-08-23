@@ -15,10 +15,10 @@ import { speedFrom } from "../core/scales";
 import { DIAGONALS_KEY, DIMENSIONS_KEY, SAMPLES_KEY, SEED_KEY, SPEED_KEY, STABLE_LIMITS_KEY, STEPS_KEY, STEP_SIZE_KEY, WALKERS_KEY } from "../core/storage";
 import { useWalkScene } from "../hooks/useWalkScene";
 import { Spinner } from "./Spinner";
-import { Statistics } from "./Statistics";
 import { WalkCanvas } from "./WalkCanvas";
 
 const WalkScene = lazy(() => import("../three/WalkScene"));
+const Statistics = lazy(() => import("./Statistics"));
 
 const LABELS = {
     dimensions: "Dimensions",
@@ -116,6 +116,8 @@ export function RWalk() {
         playback.reset();
     }, [setDiagonals, playback]);
 
+    const waiting = <Spinner label={HINTS.measuring} />;
+
     const measured = (
         <Stack spacing={2} sx={{ position: "relative", flex: 1, minHeight: 0, minWidth: 0, p: 2 }}>
             <Fade in={ready}>
@@ -138,9 +140,11 @@ export function RWalk() {
                 </Stack>
             </Fade>
 
-            {ready
-                ? <Statistics dimensions={dimensions} steps={steps} diagonals={diagonals} seed={seed} samples={samples} />
-                : <Spinner label={HINTS.measuring} />}
+            <Suspense fallback={waiting}>
+                {ready
+                    ? <Statistics dimensions={dimensions} steps={steps} diagonals={diagonals} seed={seed} samples={samples} />
+                    : waiting}
+            </Suspense>
         </Stack>
     );
 

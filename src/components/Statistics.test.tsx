@@ -2,7 +2,7 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import { render } from "@testing-library/react";
 import type { PlotConfig } from "../charts/configs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { Statistics } from "./Statistics";
+import Statistics from "./Statistics";
 
 const plotted = vi.hoisted(() => [] as PlotConfig[]);
 
