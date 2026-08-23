@@ -7,7 +7,7 @@ import type { PointerEvent } from "react";
 import type { Bounds, Track } from "../core/models";
 import { drawAxes } from "../render/axes";
 import { clearCanvas, drawWalks, prepareCanvas } from "../render/draw";
-import { MAX_ZOOM, MIN_ZOOM, clampPan, layoutFor, visibleBox, worldBox, zoomed } from "../render/layout";
+import { INSET, MAX_ZOOM, MIN_ZOOM, NO_INSET, clampPan, layoutFor, visibleBox, worldBox, zoomed } from "../render/layout";
 import { axisColour, gridColour, walkerColour } from "../render/palette";
 import { projectionFor } from "../render/projection";
 
@@ -20,9 +20,10 @@ interface WalkCanvasProps {
     span: number;
     upTo: number;
     stableLimits: boolean;
+    bare?: boolean;
 }
 
-export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits }: WalkCanvasProps) {
+export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits, bare = false }: WalkCanvasProps) {
     const areaRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const contextRef = useRef<CanvasRenderingContext2D | undefined>(undefined);
@@ -42,7 +43,7 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits }: WalkCan
 
     const dimensions = tracks[0]?.dimensions ?? 1;
     const box = useMemo(() => worldBox(bounds, span, dimensions), [bounds, span, dimensions]);
-    const fitted = useMemo(() => layoutFor(box, available, dimensions > 1), [box, available, dimensions]);
+    const fitted = useMemo(() => layoutFor(box, available, dimensions > 1, bare ? NO_INSET : INSET), [box, available, dimensions, bare]);
     const view = useMemo(() => zoomed(fitted, zoom, clampPan(fitted, zoom, offset)), [fitted, zoom, offset]);
     const shown = useMemo(() => visibleBox(view), [view]);
     const projection = useMemo(() => projectionFor(dimensions), [dimensions]);
@@ -59,7 +60,7 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits }: WalkCan
 
     useEffect(() => {
         const area = areaRef.current;
-        if (!area) return;
+        if (!area || bare) return;
 
         const onWheel = (event: WheelEvent) => {
             event.preventDefault();
@@ -69,10 +70,10 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits }: WalkCan
         area.addEventListener("wheel", onWheel, { passive: false });
 
         return () => area.removeEventListener("wheel", onWheel);
-    }, []);
+    }, [bare]);
 
     const grab = (event: PointerEvent<HTMLDivElement>) => {
-        if (zoom === MIN_ZOOM) return;
+        if (bare || zoom === MIN_ZOOM) return;
 
         event.currentTarget.setPointerCapture(event.pointerId);
         fromRef.current = { at: { x: event.clientX, y: event.clientY }, offset };
@@ -102,9 +103,9 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits }: WalkCan
         if (!context) return;
 
         clearCanvas(context, view);
-        drawAxes(context, view, shown, { grid: gridColour(mode), axis: axisColour(mode) });
+        if (!bare) drawAxes(context, view, shown, { grid: gridColour(mode), axis: axisColour(mode) });
         drawWalks(context, tracks, upTo, view, projection, colours);
-    }, [tracks, upTo, view, shown, projection, colours, mode]);
+    }, [tracks, upTo, view, shown, projection, colours, mode, bare]);
 
     return (
         <Box
@@ -118,7 +119,7 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits }: WalkCan
                 minHeight: 0,
                 minWidth: 0,
                 touchAction: "none",
-                cursor: zoom === MIN_ZOOM ? "default" : (dragging ? "grabbing" : "grab")
+                cursor: bare || zoom === MIN_ZOOM ? "default" : (dragging ? "grabbing" : "grab")
             }}
         >
             <Box component="canvas" ref={canvasRef} sx={{ display: "block" }} />
