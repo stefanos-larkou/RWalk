@@ -9,6 +9,7 @@ vi.mock("../charts/Plot", () => ({ Plot: () => null }));
 
 async function playToEnd() {
     fireEvent.change(screen.getByLabelText("Steps value"), { target: { value: "10" } });
+    await screen.findByText("0 / 10");
     fireEvent.change(screen.getByLabelText("Step size"), { target: { value: "100" } });
     await userEvent.click(screen.getByRole("button", { name: "Forward 100" }));
 }
@@ -19,7 +20,6 @@ const TRACK = { width: TRACK_WIDTH, height: 10, top: 0, left: 0, right: TRACK_WI
 function dragTo(label: string, fraction: number) {
     const track = screen.getByLabelText(label).closest(".MuiSlider-root") as HTMLElement;
     track.getBoundingClientRect = () => TRACK;
-
     fireEvent.pointerDown(track, { clientX: 0, clientY: 0, buttons: 1 });
     fireEvent.pointerMove(document, { clientX: TRACK_WIDTH * fraction, clientY: 0, buttons: 1 });
 }
