@@ -1,4 +1,4 @@
-import { Box, Grow, Stack } from "@mui/material";
+import { Box, Grow, Paper } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useDeferredValue, useMemo } from "react";
 import { displacementConfig, distributionConfig, returnsConfig } from "../charts/configs";
@@ -6,7 +6,8 @@ import { Plot } from "../charts/Plot";
 import { HISTOGRAM_BINS } from "../core/constants";
 import { expectedDensity, expectedSquared, histogram, meanSquared, measure, returnCeiling, returnedBy } from "../core/statistics";
 
-const CHART_HEIGHT = "min(68vh, 560px)";
+const CHART_HEIGHT = "min(46vh, 440px)";
+const WIDEST = 2;
 
 const ENTRANCE = 450;
 const STAGGER = 200;
@@ -45,26 +46,37 @@ export function Statistics({ dimensions, steps, diagonals, seed, samples }: Stat
     );
 
     return (
-        <Stack
-            spacing={4}
+        <Box
             sx={{
                 flex: 1,
                 minHeight: 0,
                 minWidth: 0,
                 overflowY: "auto",
-                pt: 2,
+                display: "grid",
+                gap: 2,
+                pt: 1,
                 pr: 1,
+                gridTemplateColumns: { xs: "minmax(0, 1fr)", lg: "repeat(2, minmax(0, 1fr))" },
                 opacity: busy ? 0.45 : 1,
                 transition: "opacity 150ms"
             }}
         >
-            {[displacement, distribution, returns].map((config, index) => (
+            {[displacement, returns, distribution].map((config, index) => (
                 <Grow key={index} in timeout={ENTRANCE + index * STAGGER} style={{ transformOrigin: "top center" }}>
-                    <Box sx={{ flex: "0 0 auto", height: CHART_HEIGHT }}>
+                    <Paper
+                        variant="outlined"
+                        sx={{
+                            p: 2,
+                            height: CHART_HEIGHT,
+                            borderRadius: 2,
+                            boxSizing: "border-box",
+                            gridColumn: { lg: index === WIDEST ? "span 2" : "auto" }
+                        }}
+                    >
                         <Plot config={config} />
-                    </Box>
+                    </Paper>
                 </Grow>
             ))}
-        </Stack>
+        </Box>
     );
 }
