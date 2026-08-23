@@ -1,34 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { anchoredAtOrigin, boundsFor } from "./bounds";
+import { boundsFor } from "./bounds";
 import type { WalkOptions } from "./models";
 import { positionAt, walksFor } from "./walk";
 
 const OPTIONS: WalkOptions = { dimensions: 2, steps: 100, diagonals: false };
-
-describe("anchoredAtOrigin", () => {
-    it("puts the origin at the centre of every axis", () => {
-        const anchored = anchoredAtOrigin({ min: [-3, -1], max: [5, 9] });
-        const centres = anchored.min.map((value, axis) => (value + (anchored.max[axis] ?? 0)) / 2);
-        expect(centres).toEqual([0, 0]);
-    });
-
-    it("still holds everything the walk reached", () => {
-        const box = { min: [-3, -1], max: [5, 9] };
-        const anchored = anchoredAtOrigin(box);
-        const escaped = box.min.filter((value, axis) => value < (anchored.min[axis] ?? 0) || (box.max[axis] ?? 0) > (anchored.max[axis] ?? 0));
-        expect(escaped).toEqual([]);
-    });
-
-    it("keeps each axis as tight as it can be", () => {
-        expect(anchoredAtOrigin({ min: [-3, -1], max: [5, 9] })).toEqual({ min: [-5, -9], max: [5, 9] });
-    });
-
-    it("has nothing to widen for a walk that never moved", () => {
-        const anchored = anchoredAtOrigin({ min: [0, 0], max: [0, 0] });
-        expect(anchored.min.every(value => value === 0)).toBe(true);
-        expect(anchored.max.every(value => value === 0)).toBe(true);
-    });
-});
 
 describe("boundsFor", () => {
     it("has nothing to report for no walkers", () => {

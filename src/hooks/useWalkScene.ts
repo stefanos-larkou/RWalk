@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { anchoredAtOrigin, boundsFor } from "../core/bounds";
+import { boundsFor } from "../core/bounds";
 import type { Bounds, Track } from "../core/models";
 import { walksFor } from "../core/walk";
 
@@ -31,8 +31,7 @@ export function useWalkScene(options: SceneOptions): Scene {
 
     const boxes = useMemo(() => boundsFor(tracks), [tracks]);
     const revealed = Math.max(Math.min(upTo, boxes.length - 1), 0);
-    const reached = boxes[revealed] ?? EMPTY_BOUNDS;
-    const bounds = stableLimits ? boxes.at(-1) ?? EMPTY_BOUNDS : anchoredAtOrigin(reached);
+    const bounds = (stableLimits ? boxes.at(-1) : boxes[revealed]) ?? EMPTY_BOUNDS;
     const span = stableLimits ? steps : Math.max(upTo, 1);
 
     return { tracks, bounds, span };
