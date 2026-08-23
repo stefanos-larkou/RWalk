@@ -3,11 +3,22 @@ export interface RecordedCall {
     readonly args: number[];
 }
 
+export interface RecordedLabel {
+    readonly text: string;
+    readonly x: number;
+    readonly y: number;
+}
+
 export class RecordingContext {
     readonly calls: RecordedCall[] = [];
     readonly strokes: string[] = [];
+    readonly labels: RecordedLabel[] = [];
     readonly transforms: number[][] = [];
     strokeStyle = "";
+    fillStyle = "";
+    font = "";
+    textAlign = "";
+    textBaseline = "";
 
     clearRect(...args: number[]) {
         this.calls.push({ name: "clearRect", args });
@@ -28,6 +39,10 @@ export class RecordingContext {
     stroke() {
         this.calls.push({ name: "stroke", args: [] });
         this.strokes.push(this.strokeStyle);
+    }
+
+    fillText(text: string, x: number, y: number) {
+        this.labels.push({ text, x, y });
     }
 
     setTransform(...args: number[]) {

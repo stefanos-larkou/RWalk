@@ -39,6 +39,19 @@ describe("WalkCanvas", () => {
         expect(contexts.at(-1)?.named("clearRect").at(-1)?.args).toEqual([0, 0, 400, 300]);
     });
 
+    it("numbers the axes", () => {
+        renderCanvas(20);
+        act(() => observers[0]?.send({ width: 400, height: 300 }));
+        expect(contexts.at(-1)?.labels.length ?? 0).toBeGreaterThan(0);
+    });
+
+    it("draws the axes under the walk, not over it", () => {
+        renderCanvas(20);
+        act(() => observers[0]?.send({ width: 400, height: 300 }));
+        const calls = contexts.at(-1)?.calls.map(call => call.name) ?? [];
+        expect(calls.indexOf("clearRect")).toBeLessThan(calls.lastIndexOf("stroke"));
+    });
+
     it("redraws when the playback moves", () => {
         const { rerender } = renderCanvas(5);
         act(() => observers[0]?.send({ width: 400, height: 300 }));

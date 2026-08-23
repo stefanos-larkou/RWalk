@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Track, ViewLayout } from "../core/models";
 import { contexts, RecordingContext } from "../test-support";
-import { drawWalks, prepareCanvas } from "./draw";
+import { clearCanvas, drawWalks, prepareCanvas } from "./draw";
 import { projectionFor } from "./projection";
 
 const VIEW: ViewLayout = { scale: { x: 1, y: 1 }, origin: { x: 0, y: 0 }, canvas: { x: 400, y: 300 } };
@@ -13,28 +13,18 @@ function record() {
 }
 
 function draw(context: RecordingContext, tracks: Track[], upTo: number, colours: string[] = ["red", "blue"]) {
-    drawWalks(context.api, tracks, upTo, VIEW, PROJECTION, colours, "grey");
+    drawWalks(context.api, tracks, upTo, VIEW, PROJECTION, colours);
 }
 
-describe("drawWalks", () => {
-    it("clears before it draws anything", () => {
-        const context = record();
-        draw(context, [TRACK], 3);
-        expect(context.calls[0]?.name).toBe("clearRect");
-    });
-
-    it("clears once however many walkers there are", () => {
-        const context = record();
-        draw(context, [TRACK, TRACK, TRACK], 3);
-        expect(context.named("clearRect")).toHaveLength(1);
-    });
-
+describe("clearCanvas", () => {
     it("clears the whole canvas", () => {
         const context = record();
-        draw(context, [TRACK], 3);
+        clearCanvas(context.api, VIEW);
         expect(context.named("clearRect")[0]?.args).toEqual([0, 0, 400, 300]);
     });
+});
 
+describe("drawWalks", () => {
     it("strokes each walker separately", () => {
         const one = record();
         const two = record();
@@ -46,7 +36,7 @@ describe("drawWalks", () => {
     it("gives each walker the colour it was handed", () => {
         const context = record();
         draw(context, [TRACK, TRACK], 3, ["red", "blue"]);
-        expect(context.strokes).toEqual(["grey", "red", "blue"]);
+        expect(context.strokes).toEqual(["red", "blue"]);
     });
 
     it("starts each walker's path with a single move", () => {
@@ -65,10 +55,10 @@ describe("drawWalks", () => {
         expect(long.named("lineTo").length - short.named("lineTo").length).toBe(3);
     });
 
-    it("marks the origin even with no walkers", () => {
+    it("draws nothing when there are no walkers", () => {
         const context = record();
         draw(context, [], 0);
-        expect(context.named("stroke")).toHaveLength(1);
+        expect(context.calls).toEqual([]);
     });
 });
 

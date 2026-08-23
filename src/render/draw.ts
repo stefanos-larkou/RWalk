@@ -17,12 +17,13 @@ export function prepareCanvas(canvas: HTMLCanvasElement, size: Pixel): CanvasRen
     return context;
 }
 
-export function drawWalks(context: CanvasRenderingContext2D, tracks: Track[], upTo: number, view: ViewLayout, projection: Projection, colours: string[], origin: string): void {
+export function clearCanvas(context: CanvasRenderingContext2D, view: ViewLayout): void {
     context.clearRect(0, 0, view.canvas.x, view.canvas.y);
-    drawOrigin(context, view, origin);
+}
 
+export function drawWalks(context: CanvasRenderingContext2D, tracks: Track[], upTo: number, view: ViewLayout, projection: Projection, colours: string[]): void {
     tracks.forEach((track, index) => {
-        context.strokeStyle = colours[index % colours.length] ?? origin;
+        context.strokeStyle = colours[index % colours.length] ?? "";
         context.beginPath();
 
         for (let step = 0; step <= upTo; step += 1) {
@@ -33,16 +34,4 @@ export function drawWalks(context: CanvasRenderingContext2D, tracks: Track[], up
 
         context.stroke();
     });
-}
-
-function drawOrigin(context: CanvasRenderingContext2D, view: ViewLayout, colour: string): void {
-    const centre = toPixel(view, 0, 0);
-
-    context.strokeStyle = colour;
-    context.beginPath();
-    context.moveTo(centre.x - 5, centre.y);
-    context.lineTo(centre.x + 5, centre.y);
-    context.moveTo(centre.x, centre.y - 5);
-    context.lineTo(centre.x, centre.y + 5);
-    context.stroke();
 }

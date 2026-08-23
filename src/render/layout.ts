@@ -1,7 +1,7 @@
 import type { Pixel } from "@stefanos-larkou/sim-kit";
 import type { Bounds, Box, ViewLayout } from "../core/models";
 
-const PADDING = 12;
+export const INSET = { left: 46, right: 14, top: 14, bottom: 26 };
 
 export function worldBox(bounds: Bounds, steps: number, dimensions: number): Box {
     if (dimensions === 1) {
@@ -19,7 +19,10 @@ export function worldBox(bounds: Bounds, steps: number, dimensions: number): Box
 export function layoutFor(box: Box, available: Pixel, isotropic: boolean): ViewLayout {
     const across = spread(box.minX, box.maxX);
     const down = spread(box.minY, box.maxY);
-    const usable = { x: Math.max(available.x - PADDING * 2, 1), y: Math.max(available.y - PADDING * 2, 1) };
+    const usable = {
+        x: Math.max(available.x - INSET.left - INSET.right, 1),
+        y: Math.max(available.y - INSET.top - INSET.bottom, 1)
+    };
 
     const fit = { x: usable.x / across.extent, y: usable.y / down.extent };
     const even = Math.min(fit.x, fit.y);
@@ -28,8 +31,8 @@ export function layoutFor(box: Box, available: Pixel, isotropic: boolean): ViewL
     return {
         scale,
         origin: {
-            x: PADDING + (usable.x - across.extent * scale.x) / 2 - across.min * scale.x,
-            y: PADDING + (usable.y - down.extent * scale.y) / 2 + down.max * scale.y
+            x: INSET.left + (usable.x - across.extent * scale.x) / 2 - across.min * scale.x,
+            y: INSET.top + (usable.y - down.extent * scale.y) / 2 + down.max * scale.y
         },
         canvas: available
     };
