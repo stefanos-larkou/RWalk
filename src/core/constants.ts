@@ -11,7 +11,7 @@ export const MAX_STEPS = 10000;
 export const DEFAULT_STEPS = 1000;
 
 export const MIN_SAMPLES = 50;
-export const MAX_SAMPLES = 2000;
+export const MAX_SAMPLES = 3000;
 export const DEFAULT_SAMPLES = 400;
 
 export const HISTOGRAM_BINS = 24;
