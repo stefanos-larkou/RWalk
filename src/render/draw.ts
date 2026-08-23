@@ -1,6 +1,6 @@
 import type { Pixel } from "@stefanos-larkou/sim-kit";
 import type { Track, ViewLayout } from "../core/models";
-import { INSET, toPixel, usableFrom } from "./layout";
+import { toPixel, usableFrom } from "./layout";
 import type { Projection } from "./projection";
 
 export function prepareCanvas(canvas: HTMLCanvasElement, size: Pixel): CanvasRenderingContext2D | undefined {
@@ -22,11 +22,11 @@ export function clearCanvas(context: CanvasRenderingContext2D, view: ViewLayout)
 }
 
 export function drawWalks(context: CanvasRenderingContext2D, tracks: Track[], upTo: number, view: ViewLayout, projection: Projection, colours: string[]): void {
-    const usable = usableFrom(view.canvas);
+    const usable = usableFrom(view.canvas, view.inset);
 
     context.save();
     context.beginPath();
-    context.rect(INSET.left, INSET.top, usable.x, usable.y);
+    context.rect(view.inset.left, view.inset.top, usable.x, usable.y);
     context.clip();
 
     tracks.forEach((track, index) => {

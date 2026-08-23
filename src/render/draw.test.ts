@@ -5,7 +5,7 @@ import { clearCanvas, drawWalks, prepareCanvas } from "./draw";
 import { INSET } from "./layout";
 import { projectionFor } from "./projection";
 
-const VIEW: ViewLayout = { scale: { x: 1, y: 1 }, origin: { x: 0, y: 0 }, content: { x: 100, y: 100 }, canvas: { x: 400, y: 300 } };
+const VIEW: ViewLayout = { scale: { x: 1, y: 1 }, origin: { x: 0, y: 0 }, content: { x: 100, y: 100 }, inset: INSET, canvas: { x: 400, y: 300 } };
 const PROJECTION = projectionFor(1);
 const TRACK: Track = { dimensions: 1, positions: Int32Array.from([0, 1, 0, 1, 2, 1]) };
 

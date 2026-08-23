@@ -1,8 +1,9 @@
 import { withinRange } from "@stefanos-larkou/sim-kit";
 import type { Pixel } from "@stefanos-larkou/sim-kit";
-import type { Bounds, Box, ViewLayout } from "../core/models";
+import type { Bounds, Box, Inset, ViewLayout } from "../core/models";
 
-export const INSET = { left: 56, right: 16, top: 16, bottom: 32 };
+export const INSET: Inset = { left: 56, right: 16, top: 16, bottom: 32 };
+export const NO_INSET: Inset = { left: 0, right: 0, top: 0, bottom: 0 };
 
 export function worldBox(bounds: Bounds, steps: number, dimensions: number): Box {
     if (dimensions === 1) {
@@ -20,17 +21,17 @@ export function worldBox(bounds: Bounds, steps: number, dimensions: number): Box
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 30;
 
-export function usableFrom(canvas: Pixel): Pixel {
+export function usableFrom(canvas: Pixel, inset: Inset): Pixel {
     return {
-        x: Math.max(canvas.x - INSET.left - INSET.right, 1),
-        y: Math.max(canvas.y - INSET.top - INSET.bottom, 1)
+        x: Math.max(canvas.x - inset.left - inset.right, 1),
+        y: Math.max(canvas.y - inset.top - inset.bottom, 1)
     };
 }
 
-export function layoutFor(box: Box, available: Pixel, isotropic: boolean): ViewLayout {
+export function layoutFor(box: Box, available: Pixel, isotropic: boolean, inset: Inset = INSET): ViewLayout {
     const across = spread(box.minX, box.maxX);
     const down = spread(box.minY, box.maxY);
-    const usable = usableFrom(available);
+    const usable = usableFrom(available, inset);
 
     const fit = { x: usable.x / across.extent, y: usable.y / down.extent };
     const even = Math.min(fit.x, fit.y);
@@ -39,17 +40,18 @@ export function layoutFor(box: Box, available: Pixel, isotropic: boolean): ViewL
     return {
         scale,
         origin: {
-            x: INSET.left + (usable.x - across.extent * scale.x) / 2 - across.min * scale.x,
-            y: INSET.top + (usable.y - down.extent * scale.y) / 2 + down.max * scale.y
+            x: inset.left + (usable.x - across.extent * scale.x) / 2 - across.min * scale.x,
+            y: inset.top + (usable.y - down.extent * scale.y) / 2 + down.max * scale.y
         },
         content: { x: across.extent * scale.x, y: down.extent * scale.y },
+        inset,
         canvas: available
     };
 }
 
 export function zoomed(view: ViewLayout, zoom: number, offset: Pixel): ViewLayout {
-    const usable = usableFrom(view.canvas);
-    const focus = { x: INSET.left + usable.x / 2, y: INSET.top + usable.y / 2 };
+    const usable = usableFrom(view.canvas, view.inset);
+    const focus = { x: view.inset.left + usable.x / 2, y: view.inset.top + usable.y / 2 };
 
     return {
         scale: { x: view.scale.x * zoom, y: view.scale.y * zoom },
@@ -58,12 +60,13 @@ export function zoomed(view: ViewLayout, zoom: number, offset: Pixel): ViewLayou
             y: focus.y + (view.origin.y - focus.y) * zoom + offset.y
         },
         content: { x: view.content.x * zoom, y: view.content.y * zoom },
+        inset: view.inset,
         canvas: view.canvas
     };
 }
 
 export function panLimitFor(view: ViewLayout, zoom: number): Pixel {
-    const usable = usableFrom(view.canvas);
+    const usable = usableFrom(view.canvas, view.inset);
 
     return {
         x: Math.max((view.content.x * zoom - usable.x) / 2, 0),
@@ -81,14 +84,14 @@ export function clampPan(view: ViewLayout, zoom: number, offset: Pixel): Pixel {
 }
 
 export function visibleBox(view: ViewLayout): Box {
-    const right = Math.max(view.canvas.x - INSET.right, INSET.left);
-    const bottom = Math.max(view.canvas.y - INSET.bottom, INSET.top);
+    const right = Math.max(view.canvas.x - view.inset.right, view.inset.left);
+    const bottom = Math.max(view.canvas.y - view.inset.bottom, view.inset.top);
 
     return {
-        minX: (INSET.left - view.origin.x) / view.scale.x,
+        minX: (view.inset.left - view.origin.x) / view.scale.x,
         maxX: (right - view.origin.x) / view.scale.x,
         minY: (view.origin.y - bottom) / view.scale.y,
-        maxY: (view.origin.y - INSET.top) / view.scale.y
+        maxY: (view.origin.y - view.inset.top) / view.scale.y
     };
 }
 
