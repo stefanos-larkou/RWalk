@@ -240,11 +240,17 @@ The library never calls `createTheme`. It reads the host's theme through context
 while there is **one copy** of React, MUI and Emotion in the tree. A second copy is not an error,
 the component simply reads a default theme and the host's palette silently fails to apply.
 
-It reads only tokens every host has: `palette.primary`, `palette.divider`, `palette.text`,
-`spacing`, `breakpoints`, and `palette.mode` to choose between the light and dark palettes. The
-canvas and chart colours are the library's own, in `render/palette.ts`, chosen by mode rather than
-taken from the theme, because a host's palette says nothing about how twenty walkers should be told
-apart.
+It reads only tokens every host has: `palette.primary`, `palette.divider`, `palette.text`, `spacing`
+and `breakpoints`. The canvas and chart colours are the library's own, in `render/palette.ts`, chosen
+by mode rather than taken from the theme, because a host's palette says nothing about how thirty
+walkers should be told apart.
+
+Which mode comes from `useThemeMode` in
+[sim-kit](https://github.com/stefanos-larkou/sim-kit), **not** from `palette.mode`. A host using
+MUI's CSS variables switches scheme by swapping a class and never replaces the theme object, so
+`palette.mode` is stuck at its build-time value and every axis, label and chart would keep one
+palette whatever the toggle said. The kit's hook reads the scheme the host is showing and falls back
+to `palette.mode` for a plain theme.
 
 ## Testing
 
