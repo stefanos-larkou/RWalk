@@ -4,5 +4,6 @@ export const STEPS_KEY = "rwalk:steps";
 export const SEED_KEY = "rwalk:seed";
 export const DIAGONALS_KEY = "rwalk:diagonals";
 export const STABLE_LIMITS_KEY = "rwalk:stable-limits";
+export const SAMPLES_KEY = "rwalk:samples";
 export const SPEED_KEY = "rwalk:speed";
 export const STEP_SIZE_KEY = "rwalk:step-size";

@@ -1,4 +1,5 @@
 import { createRandom } from "@stefanos-larkou/sim-kit";
+import { MAX_DIMENSIONS, POLYA_RETURN } from "./constants";
 import { squaredDistanceAt } from "./displacement";
 import type { WalkOptions } from "./models";
 import { walk } from "./walk";
@@ -81,6 +82,10 @@ export function expectedDensity(dimensions: number, diagonals: boolean, steps: n
         const away = value / spread;
         return scale * away ** (dimensions - 1) * Math.exp(-away * away / 2) / spread;
     });
+}
+
+export function returnCeiling(dimensions: number, diagonals: boolean): number | undefined {
+    return dimensions === MAX_DIMENSIONS && !diagonals ? POLYA_RETURN : undefined;
 }
 
 export function returnedBy(ensemble: Ensemble): number[] {

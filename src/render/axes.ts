@@ -8,7 +8,7 @@ export interface AxisPalette {
 }
 
 const TARGET_TICKS = 5;
-const LABEL_FONT = "12px system-ui, sans-serif";
+const LABEL_FONT = "15px system-ui, sans-serif";
 const LABEL_GAP = 6;
 
 export function drawAxes(context: CanvasRenderingContext2D, view: ViewLayout, box: Box, palette: AxisPalette): void {

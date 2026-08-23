@@ -21,6 +21,14 @@ export function frameColour(mode: Mode): string {
     return mode === "dark" ? "#ffffff" : "#000000";
 }
 
+export function measuredColour(mode: Mode): string {
+    return mode === "dark" ? "hsl(200, 80%, 66%)" : "hsl(210, 70%, 42%)";
+}
+
+export function expectedColour(mode: Mode): string {
+    return mode === "dark" ? "hsl(30, 85%, 66%)" : "hsl(24, 75%, 44%)";
+}
+
 export function labelColour(mode: Mode): string {
     return mode === "dark" ? "rgba(255, 255, 255, 0.72)" : "rgba(0, 0, 0, 0.66)";
 }

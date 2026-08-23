@@ -10,6 +10,14 @@ export const MIN_STEPS = 10;
 export const MAX_STEPS = 10000;
 export const DEFAULT_STEPS = 1000;
 
+export const MIN_SAMPLES = 50;
+export const MAX_SAMPLES = 2000;
+export const DEFAULT_SAMPLES = 400;
+
+export const HISTOGRAM_BINS = 24;
+
+export const POLYA_RETURN = 0.3405373;
+
 export const MIN_SEED = 1;
 export const MAX_SEED = 999999;
 export const DEFAULT_SEED = 42;

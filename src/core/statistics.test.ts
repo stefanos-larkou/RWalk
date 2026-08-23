@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { POLYA_RETURN } from "./constants";
 import type { WalkOptions } from "./models";
-import { expectedDensity, expectedSquared, histogram, meanSquared, measure, NEVER, returnedBy, stepVariance } from "./statistics";
+import { expectedDensity, expectedSquared, histogram, meanSquared, measure, NEVER, returnCeiling, returnedBy, stepVariance } from "./statistics";
 
 const STEPS = 400;
 const WALKERS = 600;
@@ -86,6 +87,21 @@ describe("expectedDensity", () => {
     });
 });
 
+describe("returnCeiling", () => {
+    it("is Polya's constant for a three-dimensional lattice walk", () => {
+        expect(returnCeiling(3, false)).toBe(POLYA_RETURN);
+    });
+
+    it("has no ceiling where a walk is certain to return", () => {
+        expect(returnCeiling(1, false)).toBeUndefined();
+        expect(returnCeiling(2, false)).toBeUndefined();
+    });
+
+    it("has no ceiling for a lattice the constant was not derived for", () => {
+        expect(returnCeiling(3, true)).toBeUndefined();
+    });
+});
+
 describe("returnedBy", () => {
     it("has nobody home at the start", () => {
         expect(returnedBy(ensemble(2, false))[0]).toBe(0);
@@ -101,7 +117,7 @@ describe("returnedBy", () => {
     });
 
     it("keeps three-dimensional returns under Polya's ceiling", () => {
-        expect(returnedBy(ensemble(3, false)).at(-1) ?? 0).toBeLessThan(0.3405);
+        expect(returnedBy(ensemble(3, false)).at(-1) ?? 0).toBeLessThan(POLYA_RETURN);
     });
 
     it("records no return for a walker that never came back", () => {
