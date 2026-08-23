@@ -1,6 +1,5 @@
 import { Box } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { useElementSize } from "@stefanos-larkou/sim-kit";
+import { useElementSize, useThemeMode } from "@stefanos-larkou/sim-kit";
 import { useEffect, useMemo, useRef } from "react";
 import { BufferAttribute, BufferGeometry, Group, Line, LineBasicMaterial, LineSegments, OrthographicCamera, Scene, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -51,7 +50,7 @@ export default function WalkScene({ tracks, bounds, upTo, stableLimits, bare = f
     const areaRef = useRef<HTMLDivElement>(null);
     const heldRef = useRef<Held | undefined>(undefined);
     const available = useElementSize(areaRef);
-    const mode = useTheme().palette.mode;
+    const mode = useThemeMode();
 
     const cube = useMemo(() => cubeAround(bounds), [bounds]);
     const height = radiusOf(cube) / LABEL_SHARE;

@@ -1,5 +1,5 @@
 import { Box, Grow, Paper } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { useThemeMode } from "@stefanos-larkou/sim-kit";
 import { useDeferredValue, useMemo } from "react";
 import { displacementConfig, distributionConfig, returnsConfig } from "../charts/configs";
 import { Plot } from "../charts/Plot";
@@ -21,7 +21,7 @@ interface StatisticsProps {
 }
 
 export function Statistics({ dimensions, steps, diagonals, seed, samples }: StatisticsProps) {
-    const mode = useTheme().palette.mode;
+    const mode = useThemeMode();
 
     const measuring = useDeferredValue(samples);
     const busy = measuring !== samples;

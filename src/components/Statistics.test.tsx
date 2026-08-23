@@ -17,12 +17,33 @@ vi.mock("../charts/Plot", () => ({
     }
 }));
 
-function renderStatistics(dimensions: number, diagonals = false) {
+function renderStatistics(dimensions: number, diagonals = false, mode: "light" | "dark" = "light") {
     return render(
-        <ThemeProvider theme={createTheme()}>
+        <ThemeProvider theme={createTheme({ palette: { mode } })}>
             <Statistics dimensions={dimensions} steps={40} diagonals={diagonals} seed={1} samples={60} />
         </ThemeProvider>
     );
+}
+
+const VARIABLE = createTheme({ cssVariables: { colorSchemeSelector: "class" }, colorSchemes: { light: true, dark: true } });
+
+function renderVariable(mode: "light" | "dark") {
+    return render(
+        <ThemeProvider theme={VARIABLE} defaultMode={mode} noSsr>
+            <Statistics dimensions={2} steps={40} diagonals={false} seed={1} samples={60} />
+        </ThemeProvider>
+    );
+}
+
+function textColours(): unknown[] {
+    const first = plotted[0]?.options;
+
+    return [
+        first?.plugins?.title?.color,
+        first?.plugins?.legend?.labels?.color,
+        first?.scales?.x?.title?.color,
+        first?.scales?.x?.ticks?.color
+    ];
 }
 
 function headings(): (string | undefined)[] {
@@ -36,6 +57,28 @@ function datasets(heading: string): number {
 describe("Statistics", () => {
     beforeEach(() => {
         plotted.length = 0;
+    });
+
+    it("writes its text in the colours of the theme it is under", () => {
+        const { unmount } = renderStatistics(2, false, "light");
+        const light = textColours();
+        unmount();
+        plotted.length = 0;
+        renderStatistics(2, false, "dark");
+        expect(light.filter(Boolean)).toHaveLength(4);
+        expect(textColours()).not.toEqual(light);
+    });
+
+    it("writes its text in the colours a variable theme is showing, not the ones it was built with", () => {
+        const { unmount } = renderVariable("light");
+        const light = textColours();
+        unmount();
+        plotted.length = 0;
+
+        renderVariable("dark");
+
+        expect(light.filter(Boolean)).toHaveLength(4);
+        expect(textColours()).not.toEqual(light);
     });
 
     it("lays the charts out with the bins last, where they have the width", () => {

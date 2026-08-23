@@ -1,6 +1,5 @@
 import { Box } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { useElementSize, withinRange } from "@stefanos-larkou/sim-kit";
+import { useElementSize, useThemeMode, withinRange } from "@stefanos-larkou/sim-kit";
 import type { Pixel } from "@stefanos-larkou/sim-kit";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
@@ -28,7 +27,7 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits, bare = fa
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const contextRef = useRef<CanvasRenderingContext2D | undefined>(undefined);
     const available = useElementSize(areaRef);
-    const mode = useTheme().palette.mode;
+    const mode = useThemeMode();
     const [zoom, setZoom] = useState(MIN_ZOOM);
     const [offset, setOffset] = useState<Pixel>(CENTRED);
     const [dragging, setDragging] = useState(false);
