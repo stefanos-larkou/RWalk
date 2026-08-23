@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { layoutFor, toPixel, worldBox } from "./layout";
+import { INSET, layoutFor, toPixel, worldBox } from "./layout";
 
 const AVAILABLE = { x: 800, y: 600 };
+const MIDDLE = {
+    x: INSET.left + (AVAILABLE.x - INSET.left - INSET.right) / 2,
+    y: INSET.top + (AVAILABLE.y - INSET.top - INSET.bottom) / 2
+};
 
 describe("worldBox", () => {
     it("puts step number on the x-axis in one dimension", () => {
@@ -29,13 +33,13 @@ describe("layoutFor", () => {
     it("centres a walk that has not moved yet", () => {
         const view = layoutFor({ minX: 0, maxX: 0, minY: 0, maxY: 0 }, AVAILABLE, true);
         const origin = toPixel(view, 0, 0);
-        expect(origin.x).toBeCloseTo(AVAILABLE.x / 2);
-        expect(origin.y).toBeCloseTo(AVAILABLE.y / 2);
+        expect(origin.x).toBeCloseTo(MIDDLE.x);
+        expect(origin.y).toBeCloseTo(MIDDLE.y);
     });
 
     it("centres an axis the walk has not moved along", () => {
         const view = layoutFor({ minX: 0, maxX: 100, minY: 0, maxY: 0 }, AVAILABLE, false);
-        expect(toPixel(view, 0, 0).y).toBeCloseTo(AVAILABLE.y / 2);
+        expect(toPixel(view, 0, 0).y).toBeCloseTo(MIDDLE.y);
     });
 
     it("survives a walk that never moves", () => {

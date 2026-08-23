@@ -3,9 +3,10 @@ import { useTheme } from "@mui/material/styles";
 import { useElementSize } from "@stefanos-larkou/sim-kit";
 import { useEffect, useMemo, useRef } from "react";
 import type { Bounds, Track } from "../core/models";
-import { drawWalks, prepareCanvas } from "../render/draw";
+import { drawAxes } from "../render/axes";
+import { clearCanvas, drawWalks, prepareCanvas } from "../render/draw";
 import { layoutFor, worldBox } from "../render/layout";
-import { originColour, walkerColour } from "../render/palette";
+import { axisColour, gridColour, walkerColour } from "../render/palette";
 import { projectionFor } from "../render/projection";
 
 interface WalkCanvasProps {
@@ -23,10 +24,8 @@ export function WalkCanvas({ tracks, bounds, span, upTo }: WalkCanvasProps) {
     const mode = useTheme().palette.mode;
 
     const dimensions = tracks[0]?.dimensions ?? 1;
-    const view = useMemo(
-        () => layoutFor(worldBox(bounds, span, dimensions), available, dimensions > 1),
-        [bounds, span, dimensions, available]
-    );
+    const box = useMemo(() => worldBox(bounds, span, dimensions), [bounds, span, dimensions]);
+    const view = useMemo(() => layoutFor(box, available, dimensions > 1), [box, available, dimensions]);
     const projection = useMemo(() => projectionFor(dimensions), [dimensions]);
     const colours = useMemo(
         () => tracks.map((_track, index) => walkerColour(index, mode)),
@@ -42,8 +41,11 @@ export function WalkCanvas({ tracks, bounds, span, upTo }: WalkCanvasProps) {
     useEffect(() => {
         const context = contextRef.current;
         if (!context) return;
-        drawWalks(context, tracks, upTo, view, projection, colours, originColour(mode));
-    }, [tracks, upTo, view, projection, colours, mode]);
+
+        clearCanvas(context, view);
+        drawAxes(context, view, box, { grid: gridColour(mode), axis: axisColour(mode) });
+        drawWalks(context, tracks, upTo, view, projection, colours);
+    }, [tracks, upTo, view, box, projection, colours, mode]);
 
     return (
         <Box ref={areaRef} sx={{ flex: 1, minHeight: 0, minWidth: 0 }}>
