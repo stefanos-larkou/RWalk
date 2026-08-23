@@ -200,5 +200,10 @@ export default function WalkScene({ tracks, bounds, upTo, stableLimits, bare = f
         held.renderer.render(held.scene, held.camera);
     }, [labels, height]);
 
-    return <Box ref={areaRef} sx={{ flex: 1, minHeight: 0, minWidth: 0, "& canvas": { display: "block" } }} />;
+    return (
+        <Box
+            ref={areaRef}
+            sx={{ flex: 1, minHeight: 0, minWidth: 0, touchAction: bare ? "auto" : "none", "& canvas": { display: "block" } }}
+        />
+    );
 }

@@ -4,6 +4,7 @@ import type { Pixel } from "@stefanos-larkou/sim-kit";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import type { Bounds, Track } from "../core/models";
+import { apartness } from "../core/touch";
 import { drawAxes } from "../render/axes";
 import { clearCanvas, drawWalks, prepareCanvas } from "../render/draw";
 import { INSET, MAX_ZOOM, MIN_ZOOM, NO_INSET, clampPan, layoutFor, visibleBox, worldBox, zoomed } from "../render/layout";
@@ -33,6 +34,8 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits, bare = fa
     const [dragging, setDragging] = useState(false);
     const [shownFor, setShownFor] = useState({ tracks, stableLimits });
     const fromRef = useRef<{ at: Pixel; offset: Pixel; } | undefined>(undefined);
+    const touchesRef = useRef(new Map<number, Pixel>());
+    const pinchRef = useRef<{ apart: number; zoom: number; } | undefined>(undefined);
 
     if (shownFor.tracks !== tracks || shownFor.stableLimits !== stableLimits) {
         setShownFor({ tracks, stableLimits });
@@ -72,7 +75,18 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits, bare = fa
     }, [bare]);
 
     const grab = (event: PointerEvent<HTMLDivElement>) => {
-        if (bare || zoom === MIN_ZOOM) return;
+        if (bare) return;
+
+        touchesRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+        if (touchesRef.current.size === 2) {
+            pinchRef.current = { apart: apartness(touchesRef.current), zoom };
+            fromRef.current = undefined;
+            setDragging(false);
+            return;
+        }
+
+        if (zoom === MIN_ZOOM) return;
 
         event.currentTarget.setPointerCapture(event.pointerId);
         fromRef.current = { at: { x: event.clientX, y: event.clientY }, offset };
@@ -80,6 +94,16 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits, bare = fa
     };
 
     const drag = (event: PointerEvent<HTMLDivElement>) => {
+        const touches = touchesRef.current;
+        if (touches.has(event.pointerId)) touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+        const pinch = pinchRef.current;
+        if (pinch && touches.size >= 2) {
+            const apart = apartness(touches);
+            if (apart > 0) setZoom(withinRange(pinch.zoom * apart / pinch.apart, MIN_ZOOM, MAX_ZOOM));
+            return;
+        }
+
         const from = fromRef.current;
         if (!from) return;
 
@@ -90,6 +114,9 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits, bare = fa
     };
 
     const release = (event: PointerEvent<HTMLDivElement>) => {
+        touchesRef.current.delete(event.pointerId);
+        if (touchesRef.current.size < 2) pinchRef.current = undefined;
+
         if (!fromRef.current) return;
 
         if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
