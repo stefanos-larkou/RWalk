@@ -104,6 +104,10 @@ export function resetContexts(): void {
     contexts.length = 0;
 }
 
+export function stubScrollIntoView(): void {
+    Element.prototype.scrollIntoView = () => { };
+}
+
 export function stubPointerCapture(): void {
     Element.prototype.hasPointerCapture = () => false;
     Element.prototype.setPointerCapture = () => { };

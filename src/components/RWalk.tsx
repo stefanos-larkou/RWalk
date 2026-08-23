@@ -7,7 +7,7 @@ import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import { Box, Button, Fade, FormControlLabel, IconButton, Slider, Stack, Switch, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
 import { ControlSlider, EMPTY_INDEX, NumberField, lastIndex, usePersistedFlag, usePersistedNumber, usePlayback } from "@stefanos-larkou/sim-kit";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, MouseEvent } from "react";
 import { CONTROLS_WIDTH, DEFAULT_DIMENSIONS, DEFAULT_SAMPLES, DEFAULT_SEED, DEFAULT_SPEED_SLIDER, DEFAULT_STEPS, DEFAULT_STEP_SIZE, DEFAULT_WALKERS, MAX_DIMENSIONS, MAX_SAMPLES, MAX_SEED, MAX_STEPS, MAX_STEP_SIZE, MAX_WALKERS, MIN_DIMENSIONS, MIN_SAMPLES, MIN_SEED, MIN_STEPS, MIN_STEP_SIZE, MIN_WALKERS, SLIDER_MAX, SLIDER_MIN, TRANSPORT_BUTTONS_WIDTH } from "../core/constants";
 import { stepCounter } from "../core/counter";
@@ -67,6 +67,7 @@ export function RWalk() {
     const [ready, setReady] = useState(false);
     const [hinting, setHinting] = useState(false);
 
+    const swapRef = useRef<HTMLDivElement>(null);
     const [sampling, setSampling] = useState(samples);
     const [walking, setWalking] = useState(walkers);
     const [stepping, setStepping] = useState(steps);
@@ -82,6 +83,10 @@ export function RWalk() {
         if (!measuring) return;
         const frame = requestAnimationFrame(() => setReady(true));
         return () => cancelAnimationFrame(frame);
+    }, [measuring]);
+
+    useEffect(() => {
+        swapRef.current?.scrollIntoView({ block: "start" });
     }, [measuring]);
 
     const showStatistics = useCallback(() => {
@@ -300,7 +305,7 @@ export function RWalk() {
     );
 
     return (
-        <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, display: "grid", gridTemplateColumns: "minmax(0, 1fr)" }}>
+        <Box ref={swapRef} sx={{ flex: 1, minHeight: 0, minWidth: 0, display: "grid", gridTemplateColumns: "minmax(0, 1fr)" }}>
             <Fade in={!measuring} timeout={SWAP}>
                 <Box sx={PANE}>{watched}</Box>
             </Fade>
