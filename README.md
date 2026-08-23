@@ -227,7 +227,7 @@ import { AutoWalk } from "@stefanos-larkou/rwalk";
 
 > **Give every run a fresh `key`.** `AutoWalk` runs once per mount. Changing `seed` on a live
 > instance leaves its "already reported" flag set, so `onFinished` never fires again, and the
- playback keeps its index across the change, so a shorter new walk can read as finished the moment
+> playback keeps its index across the change, so a shorter new walk can read as finished the moment
 > it starts.
 
 `speed` is steps per second. The host chooses `dimensions`, deliberately: three-dimensional walks
