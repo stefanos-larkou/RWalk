@@ -1,0 +1,65 @@
+import { ThemeProvider, createTheme } from "@mui/material";
+import { render } from "@testing-library/react";
+import type { PlotConfig } from "../charts/configs";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Statistics } from "./Statistics";
+
+const plotted = vi.hoisted(() => [] as PlotConfig[]);
+
+const DISPLACEMENT = "How far the walkers get";
+const DISTRIBUTION = "Where the walkers end up";
+const RETURNS = "Walkers that find their way home";
+
+vi.mock("../charts/Plot", () => ({
+    Plot: ({ config }: { config: PlotConfig; }) => {
+        plotted.push(config);
+        return null;
+    }
+}));
+
+function renderStatistics(dimensions: number, diagonals = false) {
+    return render(
+        <ThemeProvider theme={createTheme()}>
+            <Statistics dimensions={dimensions} steps={40} diagonals={diagonals} seed={1} samples={60} />
+        </ThemeProvider>
+    );
+}
+
+function headings(): (string | undefined)[] {
+    return plotted.slice(0, 3).map(config => config.options?.plugins?.title?.text as string | undefined);
+}
+
+function datasets(heading: string): number {
+    return plotted.find(config => config.options?.plugins?.title?.text === heading)?.data.datasets.length ?? 0;
+}
+
+describe("Statistics", () => {
+    beforeEach(() => {
+        plotted.length = 0;
+    });
+
+    it("lays the charts out with the bins last, where they have the width", () => {
+        renderStatistics(2);
+        expect(headings()).toEqual([DISPLACEMENT, RETURNS, DISTRIBUTION]);
+    });
+
+    it("draws what theory predicts alongside every measurement", () => {
+        renderStatistics(2);
+        expect([datasets(DISPLACEMENT), datasets(DISTRIBUTION)]).toEqual([2, 2]);
+    });
+
+    it("has a ceiling to hold the returns against in three dimensions", () => {
+        renderStatistics(3);
+        expect(datasets(RETURNS)).toBe(2);
+    });
+
+    it("draws no ceiling where the one it knows does not apply", () => {
+        renderStatistics(3, true);
+        expect(datasets(RETURNS)).toBe(1);
+    });
+
+    it("draws no ceiling where the walkers all come home", () => {
+        renderStatistics(1);
+        expect(datasets(RETURNS)).toBe(1);
+    });
+});

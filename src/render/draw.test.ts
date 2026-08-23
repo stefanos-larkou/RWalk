@@ -2,9 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { Track, ViewLayout } from "../core/models";
 import { contexts, RecordingContext } from "../test-support";
 import { clearCanvas, drawWalks, prepareCanvas } from "./draw";
+import { INSET } from "./layout";
 import { projectionFor } from "./projection";
 
-const VIEW: ViewLayout = { scale: { x: 1, y: 1 }, origin: { x: 0, y: 0 }, canvas: { x: 400, y: 300 } };
+const VIEW: ViewLayout = { scale: { x: 1, y: 1 }, origin: { x: 0, y: 0 }, content: { x: 100, y: 100 }, canvas: { x: 400, y: 300 } };
 const PROJECTION = projectionFor(1);
 const TRACK: Track = { dimensions: 1, positions: Int32Array.from([0, 1, 0, 1, 2, 1]) };
 
@@ -58,7 +59,24 @@ describe("drawWalks", () => {
     it("draws nothing when there are no walkers", () => {
         const context = record();
         draw(context, [], 0);
-        expect(context.calls).toEqual([]);
+        expect(context.named("stroke")).toEqual([]);
+        expect(context.named("moveTo")).toEqual([]);
+    });
+
+    it("keeps a zoomed walk inside the plot area", () => {
+        const context = record();
+        draw(context, [TRACK], 3);
+        const clipped = context.named("rect")[0]?.args ?? [];
+
+        expect(context.calls.findIndex(call => call.name === "clip")).toBeLessThan(context.calls.findIndex(call => call.name === "stroke"));
+        expect(clipped).toEqual([INSET.left, INSET.top, 400 - INSET.left - INSET.right, 300 - INSET.top - INSET.bottom]);
+    });
+
+    it("puts back whatever it changed", () => {
+        const context = record();
+        draw(context, [TRACK], 3);
+
+        expect(context.named("save")).toHaveLength(context.named("restore").length);
     });
 });
 

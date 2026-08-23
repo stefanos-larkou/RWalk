@@ -3,7 +3,7 @@ import type { Box, ViewLayout } from "../core/models";
 import { RecordingContext } from "../test-support";
 import { drawAxes } from "./axes";
 
-const VIEW: ViewLayout = { scale: { x: 2, y: 2 }, origin: { x: 200, y: 200 }, canvas: { x: 400, y: 300 } };
+const VIEW: ViewLayout = { scale: { x: 2, y: 2 }, origin: { x: 200, y: 200 }, content: { x: 100, y: 100 }, canvas: { x: 400, y: 300 } };
 const PALETTE = { grid: "grid", axis: "axis" };
 
 function draw(box: Box) {

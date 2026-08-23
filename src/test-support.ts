@@ -9,6 +9,8 @@ export interface RecordedLabel {
     readonly y: number;
 }
 
+const FONT_WIDTH_SHARE = 8;
+
 export class RecordingContext {
     readonly calls: RecordedCall[] = [];
     readonly strokes: string[] = [];
@@ -43,10 +45,31 @@ export class RecordingContext {
 
     fillText(text: string, x: number, y: number) {
         this.labels.push({ text, x, y });
+        this.calls.push({ name: "fillText", args: [x, y] });
     }
 
     setTransform(...args: number[]) {
         this.transforms.push(args);
+    }
+
+    save() {
+        this.calls.push({ name: "save", args: [] });
+    }
+
+    restore() {
+        this.calls.push({ name: "restore", args: [] });
+    }
+
+    rect(...args: number[]) {
+        this.calls.push({ name: "rect", args });
+    }
+
+    clip() {
+        this.calls.push({ name: "clip", args: [] });
+    }
+
+    measureText(text: string): TextMetrics {
+        return { width: text.length * FONT_WIDTH_SHARE } as TextMetrics;
     }
 
     named(name: string): RecordedCall[] {
@@ -79,4 +102,10 @@ export function stubCanvas(): void {
 
 export function resetContexts(): void {
     contexts.length = 0;
+}
+
+export function stubPointerCapture(): void {
+    Element.prototype.hasPointerCapture = () => false;
+    Element.prototype.setPointerCapture = () => { };
+    Element.prototype.releasePointerCapture = () => { };
 }

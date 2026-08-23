@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { INSET, layoutFor, toPixel, worldBox } from "./layout";
+import { INSET, MAX_ZOOM, MIN_ZOOM, clampPan, layoutFor, panLimitFor, toPixel, usableFrom, visibleBox, worldBox, zoomed } from "./layout";
 
 const AVAILABLE = { x: 800, y: 600 };
+const BOX = { minX: -10, maxX: 10, minY: -10, maxY: 10 };
+const NOWHERE = { x: 0, y: 0 };
 const MIDDLE = {
     x: INSET.left + (AVAILABLE.x - INSET.left - INSET.right) / 2,
     y: INSET.top + (AVAILABLE.y - INSET.top - INSET.bottom) / 2
@@ -58,5 +60,107 @@ describe("layoutFor", () => {
     it("draws increasing values further up the screen", () => {
         const view = layoutFor({ minX: 0, maxX: 10, minY: 0, maxY: 10 }, AVAILABLE, true);
         expect(toPixel(view, 0, 10).y).toBeLessThan(toPixel(view, 0, 0).y);
+    });
+});
+
+describe("zoomed", () => {
+    it("leaves the fitted view alone", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        expect(zoomed(fitted, MIN_ZOOM, NOWHERE)).toEqual(fitted);
+    });
+
+    it("holds the middle of the plot area still", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        const usable = usableFrom(AVAILABLE);
+        const middle = { x: INSET.left + usable.x / 2, y: INSET.top + usable.y / 2 };
+        const before = toPixel(fitted, 0, 0);
+        const after = toPixel(zoomed(fitted, 4, NOWHERE), 0, 0);
+
+        expect(after.x - middle.x).toBeCloseTo((before.x - middle.x) * 4);
+        expect(after.y - middle.y).toBeCloseTo((before.y - middle.y) * 4);
+    });
+
+    it("spreads the walk over more pixels the further it is zoomed in", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        const close = zoomed(fitted, 3, NOWHERE);
+
+        expect(close.scale.x).toBeCloseTo(fitted.scale.x * 3);
+        expect(close.content.x).toBeCloseTo(fitted.content.x * 3);
+    });
+
+    it("moves the walk by exactly what it is panned", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        const before = toPixel(zoomed(fitted, 2, NOWHERE), 0, 0);
+        const after = toPixel(zoomed(fitted, 2, { x: 30, y: -20 }), 0, 0);
+
+        expect([after.x - before.x, after.y - before.y]).toEqual([30, -20]);
+    });
+});
+
+describe("panLimitFor", () => {
+    it("allows no panning of a walk that is wholly on screen", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        expect(panLimitFor(fitted, MIN_ZOOM)).toEqual(NOWHERE);
+    });
+
+    it("allows exactly the overflow once the walk is zoomed into", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        const usable = usableFrom(AVAILABLE);
+
+        expect(panLimitFor(fitted, 2).x).toBeCloseTo((fitted.content.x * 2 - usable.x) / 2);
+    });
+
+    it("allows no panning along an axis the walk barely covers", () => {
+        const fitted = layoutFor({ minX: -100, maxX: 100, minY: 0, maxY: 1 }, AVAILABLE, true);
+        expect(panLimitFor(fitted, 2).y).toBe(0);
+    });
+});
+
+describe("clampPan", () => {
+    it("keeps a pan the walk has room for", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        expect(clampPan(fitted, 4, { x: 20, y: 20 })).toEqual({ x: 20, y: 20 });
+    });
+
+    it("stops the walk being dragged off the screen", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        const limit = panLimitFor(fitted, 2);
+
+        expect(clampPan(fitted, 2, { x: 100000, y: -100000 })).toEqual({ x: limit.x, y: -limit.y });
+    });
+});
+
+describe("visibleBox", () => {
+    it("shows less of the walk the further it is zoomed in", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        const whole = visibleBox(fitted);
+        const part = visibleBox(zoomed(fitted, 4, NOWHERE));
+
+        expect(part.maxX - part.minX).toBeCloseTo((whole.maxX - whole.minX) / 4);
+    });
+
+    it("holds the whole walk at the fitted zoom", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        const whole = visibleBox(fitted);
+
+        expect(whole.minX).toBeLessThanOrEqual(BOX.minX);
+        expect(whole.maxX).toBeGreaterThanOrEqual(BOX.maxX);
+        expect(whole.minY).toBeLessThanOrEqual(BOX.minY);
+        expect(whole.maxY).toBeGreaterThanOrEqual(BOX.maxY);
+    });
+
+    it("follows the walk as it is panned", () => {
+        const fitted = layoutFor(BOX, AVAILABLE, true);
+        const before = visibleBox(zoomed(fitted, 4, NOWHERE));
+        const after = visibleBox(zoomed(fitted, 4, { x: -40, y: 0 }));
+
+        expect(after.minX).toBeGreaterThan(before.minX);
+    });
+});
+
+describe("the zoom range", () => {
+    it("starts fully out and goes no further", () => {
+        expect(MIN_ZOOM).toBe(1);
+        expect(MAX_ZOOM).toBeGreaterThan(MIN_ZOOM);
     });
 });
