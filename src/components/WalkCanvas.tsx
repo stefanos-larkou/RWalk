@@ -117,7 +117,7 @@ export function WalkCanvas({ tracks, bounds, span, upTo, stableLimits, bare = fa
                 flex: 1,
                 minHeight: 0,
                 minWidth: 0,
-                touchAction: "none",
+                touchAction: bare ? "auto" : "none",
                 cursor: bare || zoom === MIN_ZOOM ? "default" : (dragging ? "grabbing" : "grab")
             }}
         >
