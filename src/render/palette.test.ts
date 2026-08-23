@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { axisColour, frameColour, gridColour, labelColour, walkerColour } from "./palette";
+import { axisColour, frameColour, gridColour, labelColour, measuredColour, measuredFill, walkerColour } from "./palette";
 
 describe("walkerColour", () => {
     it("gives neighbouring walkers different colours", () => {
@@ -25,6 +25,23 @@ describe("the canvas colours", () => {
     it("differ between light and dark", () => {
         expect(gridColour("light")).not.toBe(gridColour("dark"));
         expect(axisColour("light")).not.toBe(axisColour("dark"));
+    });
+});
+
+describe("the chart colours", () => {
+    it("fills under a measurement in the colour it is drawn in", () => {
+        (["light", "dark"] as const).forEach(mode => {
+            const hue = measuredColour(mode).replace("hsl(", "").replace(")", "");
+            expect(measuredFill(mode)).toContain(hue);
+        });
+    });
+
+    it("fills faintly enough to read the grid through", () => {
+        (["light", "dark"] as const).forEach(mode => {
+            const alpha = Number(measuredFill(mode).split(",").at(-1)?.replace(")", ""));
+            expect(alpha).toBeGreaterThan(0);
+            expect(alpha).toBeLessThan(0.3);
+        });
     });
 });
 

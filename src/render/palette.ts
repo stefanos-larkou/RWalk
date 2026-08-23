@@ -3,6 +3,8 @@ type Mode = "light" | "dark";
 const GOLDEN_ANGLE = 137.508;
 export const FRAME_OPACITY = 0.36;
 export const GRID_OPACITY = 0.09;
+const MEASURED = { dark: "200, 80%, 66%", light: "210, 70%, 42%" };
+const FILL_ALPHA = 0.14;
 
 export function walkerColour(index: number, mode: Mode): string {
     const hue = Math.round(index * GOLDEN_ANGLE) % 360;
@@ -22,7 +24,11 @@ export function frameColour(mode: Mode): string {
 }
 
 export function measuredColour(mode: Mode): string {
-    return mode === "dark" ? "hsl(200, 80%, 66%)" : "hsl(210, 70%, 42%)";
+    return `hsl(${MEASURED[mode]})`;
+}
+
+export function measuredFill(mode: Mode, alpha = FILL_ALPHA): string {
+    return `hsla(${MEASURED[mode]}, ${alpha})`;
 }
 
 export function expectedColour(mode: Mode): string {

@@ -2,9 +2,18 @@ import { describe, expect, it } from "vitest";
 import { POLYA_RETURN } from "../core/constants";
 import { histogram, measure } from "../core/statistics";
 import type { WalkOptions } from "../core/models";
-import { asPercent, displacementConfig, distributionConfig, returnsConfig, thinned } from "./configs";
+import { asPercent, displacementConfig, distributionConfig, edgeOf, returnsConfig, thinned } from "./configs";
+
 
 const OPTIONS: WalkOptions = { dimensions: 2, steps: 200, diagonals: false };
+
+function filling(set: unknown): unknown {
+    return (set as { fill?: unknown; })?.fill ?? false;
+}
+
+function dashing(set: unknown): unknown {
+    return (set as { borderDash?: unknown; })?.borderDash;
+}
 
 describe("thinned", () => {
     it("leaves a short series alone", () => {
@@ -35,8 +44,8 @@ describe("displacementConfig", () => {
 
     it("dashes the theory and not the measurement", () => {
         const config = displacementConfig([0, 1, 2], [0, 1, 2], "dark");
-        expect(config.data.datasets[0]?.borderDash).toEqual([]);
-        expect(config.data.datasets[1]?.borderDash).not.toEqual([]);
+        expect(dashing(config.data.datasets[0])).toEqual([]);
+        expect(dashing(config.data.datasets[1])).not.toEqual([]);
     });
 
     it("thins a long run", () => {
@@ -63,6 +72,24 @@ describe("every chart", () => {
         });
     });
 
+    it("leaves the theory a bare line over whatever was measured", () => {
+        configs.forEach(config => expect(filling(config.data.datasets[1])).toBe(false));
+    });
+
+    it("fills under a measurement drawn as a curve", () => {
+        const curved = configs.filter(config => config.data.datasets[0]?.type !== "bar");
+
+        expect(curved).toHaveLength(2);
+        curved.forEach(config => expect(filling(config.data.datasets[0])).toBe("origin"));
+    });
+
+    it("rules the axis a value is read off and not the other", () => {
+        configs.forEach(config => {
+            expect(config.options?.scales?.y?.grid?.display).toBe(true);
+            expect(config.options?.scales?.x?.grid?.display).toBe(false);
+        });
+    });
+
     it("makes the heading larger than the axis names", () => {
         const heading = configs[0]?.options?.plugins?.title?.font;
         const axis = configs[0]?.options?.scales?.x?.title?.font;
@@ -71,11 +98,33 @@ describe("every chart", () => {
 });
 
 describe("distributionConfig", () => {
-    it("steps the measured bars and smooths the theory", () => {
-        const bars = histogram(measure(OPTIONS, 40, 1).distances, 12);
-        const config = distributionConfig(bars, bars.centres.map(() => 0), "dark");
-        expect(config.data.datasets[0]).toHaveProperty("stepped", true);
-        expect(config.data.datasets[1]).not.toHaveProperty("stepped");
+    const bars = histogram(measure(OPTIONS, 40, 1).distances, 12);
+    const config = distributionConfig(bars, bars.centres.map(() => 0), "dark");
+
+    it("stands the measurement in bars and draws the theory as a curve", () => {
+        expect(config.data.datasets[0]).toHaveProperty("type", "bar");
+        expect(config.data.datasets[1]?.type ?? "line").toBe("line");
+    });
+
+    it("gives every bin a bar", () => {
+        expect(config.data.datasets[0]?.data).toHaveLength(bars.centres.length);
+    });
+
+    it("leaves the bars a gap to be told apart by", () => {
+        const columns = config.data.datasets[0] as { barPercentage?: number; };
+        expect(columns.barPercentage).toBeGreaterThan(0.5);
+        expect(columns.barPercentage).toBeLessThan(1);
+    });
+
+    it("draws the curve over the bars rather than behind them", () => {
+        const bars = config.data.datasets[0] as { order?: number; };
+        const curve = config.data.datasets[1] as { order?: number; };
+        expect(Number(curve.order)).toBeLessThan(Number(bars.order));
+    });
+
+    it("shows only the distances a walker can have covered", () => {
+        expect(config.options?.scales?.x?.min).toBe(0);
+        expect(config.options?.scales?.x?.max).toBeCloseTo(edgeOf(bars));
     });
 });
 

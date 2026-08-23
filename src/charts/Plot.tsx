@@ -1,23 +1,23 @@
 import { Box } from "@mui/material";
 import { Chart } from "chart.js";
-import type { ChartConfiguration } from "chart.js";
 import { useEffect, useRef } from "react";
+import type { PlotConfig } from "./configs";
 import "./register";
 
 interface PlotProps {
-    config: ChartConfiguration<"line">;
+    config: PlotConfig;
 }
 
 export function Plot({ config }: PlotProps) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const chartRef = useRef<Chart<"line"> | undefined>(undefined);
+    const chartRef = useRef<Chart<"bar" | "line"> | undefined>(undefined);
     const drawn = useRef(false);
 
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const chart = new Chart(canvas, { type: "line", data: { datasets: [] } });
+        const chart = new Chart<"bar" | "line">(canvas, { type: "line", data: { datasets: [] } });
         chartRef.current = chart;
 
         return () => {

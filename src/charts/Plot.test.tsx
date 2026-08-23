@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
-import type { ChartConfiguration } from "chart.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { PlotConfig } from "./configs";
 import { Plot } from "./Plot";
 
 interface Built {
@@ -35,10 +35,10 @@ vi.mock("chart.js", () => {
         }
     }
 
-    return { Chart: FakeChart, Legend: {}, LineController: {}, LineElement: {}, LinearScale: {}, PointElement: {}, Title: {}, Tooltip: {} };
+    return { Chart: FakeChart, BarController: {}, BarElement: {}, Filler: {}, Legend: {}, LineController: {}, LineElement: {}, LinearScale: {}, PointElement: {}, Title: {}, Tooltip: {} };
 });
 
-function configFor(label: string): ChartConfiguration<"line"> {
+function configFor(label: string): PlotConfig {
     return { type: "line", data: { datasets: [{ label, data: [] }] }, options: {} };
 }
 
