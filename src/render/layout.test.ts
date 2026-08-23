@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { INSET, MAX_ZOOM, MIN_ZOOM, clampPan, layoutFor, panLimitFor, toPixel, usableFrom, visibleBox, worldBox, zoomed } from "./layout";
+import { INSET, MAX_ZOOM, MIN_ZOOM, NO_INSET, clampPan, layoutFor, panLimitFor, toPixel, usableFrom, visibleBox, worldBox, zoomed } from "./layout";
 
 const AVAILABLE = { x: 800, y: 600 };
+const WHOLE = { x: 400, y: 400 };
 const BOX = { minX: -10, maxX: 10, minY: -10, maxY: 10 };
 const NOWHERE = { x: 0, y: 0 };
 const MIDDLE = {
@@ -63,6 +64,31 @@ describe("layoutFor", () => {
     });
 });
 
+describe("a view with no inset", () => {
+    it("gives the whole canvas over to the walk", () => {
+        const bare = layoutFor(BOX, WHOLE, true, NO_INSET);
+        expect(bare.content.x).toBeCloseTo(WHOLE.x);
+        expect(bare.content.y).toBeCloseTo(WHOLE.y);
+    });
+
+    it("centres the walk on the canvas rather than on a plot area within it", () => {
+        const bare = layoutFor(BOX, WHOLE, true, NO_INSET);
+        const middle = toPixel(bare, 0, 0);
+        expect(middle.x).toBeCloseTo(WHOLE.x / 2);
+        expect(middle.y).toBeCloseTo(WHOLE.y / 2);
+    });
+
+    it("shows exactly the walk and no margin around it", () => {
+        const shown = visibleBox(layoutFor(BOX, WHOLE, true, NO_INSET));
+        expect([shown.minX, shown.maxX]).toEqual([BOX.minX, BOX.maxX]);
+    });
+
+    it("keeps the bordered view smaller than the bare one", () => {
+        const bordered = layoutFor(BOX, WHOLE, true);
+        expect(bordered.content.x).toBeLessThan(layoutFor(BOX, WHOLE, true, NO_INSET).content.x);
+    });
+});
+
 describe("zoomed", () => {
     it("leaves the fitted view alone", () => {
         const fitted = layoutFor(BOX, AVAILABLE, true);
@@ -71,7 +97,7 @@ describe("zoomed", () => {
 
     it("holds the middle of the plot area still", () => {
         const fitted = layoutFor(BOX, AVAILABLE, true);
-        const usable = usableFrom(AVAILABLE);
+        const usable = usableFrom(AVAILABLE, INSET);
         const middle = { x: INSET.left + usable.x / 2, y: INSET.top + usable.y / 2 };
         const before = toPixel(fitted, 0, 0);
         const after = toPixel(zoomed(fitted, 4, NOWHERE), 0, 0);
@@ -105,7 +131,7 @@ describe("panLimitFor", () => {
 
     it("allows exactly the overflow once the walk is zoomed into", () => {
         const fitted = layoutFor(BOX, AVAILABLE, true);
-        const usable = usableFrom(AVAILABLE);
+        const usable = usableFrom(AVAILABLE, INSET);
 
         expect(panLimitFor(fitted, 2).x).toBeCloseTo((fitted.content.x * 2 - usable.x) / 2);
     });

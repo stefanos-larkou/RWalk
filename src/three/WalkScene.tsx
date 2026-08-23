@@ -17,6 +17,7 @@ interface WalkSceneProps {
     bounds: Bounds;
     upTo: number;
     stableLimits: boolean;
+    bare?: boolean;
 }
 
 interface Held {
@@ -46,7 +47,7 @@ function joined(parts: Float32Array[]): Float32Array {
     return whole;
 }
 
-export default function WalkScene({ tracks, bounds, upTo, stableLimits }: WalkSceneProps) {
+export default function WalkScene({ tracks, bounds, upTo, stableLimits, bare = false }: WalkSceneProps) {
     const areaRef = useRef<HTMLDivElement>(null);
     const heldRef = useRef<Held | undefined>(undefined);
     const available = useElementSize(areaRef);
@@ -56,7 +57,7 @@ export default function WalkScene({ tracks, bounds, upTo, stableLimits }: WalkSc
     const height = radiusOf(cube) / LABEL_SHARE;
     const labels = useMemo(() => labelsFor(cube, TARGET_TICKS, radiusOf(cube) / LABEL_GAP_SHARE), [cube]);
 
-    const signature = labels.map(label => label.value).join(",");
+    const signature = bare ? "" : labels.map(label => label.value).join(",");
     const values = useMemo(() => signature.split(",").filter(Boolean), [signature]);
 
     useEffect(() => {
@@ -92,6 +93,13 @@ export default function WalkScene({ tracks, bounds, upTo, stableLimits }: WalkSc
             heldRef.current = undefined;
         };
     }, []);
+
+    useEffect(() => {
+        const held = heldRef.current;
+        if (!held) return;
+
+        held.controls.enabled = !bare;
+    }, [bare]);
 
     useEffect(() => {
         const held = heldRef.current;

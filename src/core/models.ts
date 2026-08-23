@@ -23,9 +23,17 @@ export interface Box {
     readonly maxY: number;
 }
 
+export interface Inset {
+    readonly left: number;
+    readonly right: number;
+    readonly top: number;
+    readonly bottom: number;
+}
+
 export interface ViewLayout {
     readonly scale: Pixel;
     readonly origin: Pixel;
     readonly content: Pixel;
+    readonly inset: Inset;
     readonly canvas: Pixel;
 }

@@ -1,6 +1,6 @@
 import type { Box, ViewLayout } from "../core/models";
 import { tickStep, ticksBetween } from "../core/ticks";
-import { INSET, toPixel } from "./layout";
+import { toPixel } from "./layout";
 
 export interface AxisPalette {
     grid: string;
@@ -12,10 +12,10 @@ const LABEL_FONT = "15px system-ui, sans-serif";
 const LABEL_GAP = 6;
 
 export function drawAxes(context: CanvasRenderingContext2D, view: ViewLayout, box: Box, palette: AxisPalette): void {
-    const left = INSET.left;
-    const right = Math.max(view.canvas.x - INSET.right, left);
-    const top = INSET.top;
-    const bottom = Math.max(view.canvas.y - INSET.bottom, top);
+    const left = view.inset.left;
+    const right = Math.max(view.canvas.x - view.inset.right, left);
+    const top = view.inset.top;
+    const bottom = Math.max(view.canvas.y - view.inset.bottom, top);
 
     context.lineWidth = 1;
     context.font = LABEL_FONT;

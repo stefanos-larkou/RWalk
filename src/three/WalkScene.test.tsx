@@ -14,6 +14,7 @@ interface Renderer {
 
 interface Controls {
     camera: OrthographicCamera;
+    enabled: boolean;
     enablePan: boolean;
     minZoom: number;
     disposed: number;
@@ -22,8 +23,6 @@ interface Controls {
 const renderers = vi.hoisted(() => [] as Renderer[]);
 const controls = vi.hoisted(() => [] as Controls[]);
 
-// Only the parts that want a GPU are stood in for. The rest of three.js is arithmetic over typed
-// arrays and runs in jsdom unchanged, so the scene under test is the real one.
 vi.mock("three", async importOriginal => {
     const actual = await importOriginal<typeof import("three")>();
 
@@ -35,9 +34,9 @@ vi.mock("three", async importOriginal => {
             renderers.push(this);
         }
 
-        setPixelRatio() {}
-        setSize() {}
-        render() {}
+        setPixelRatio() { }
+        setSize() { }
+        render() { }
 
         dispose() {
             this.disposed += 1;
@@ -53,6 +52,7 @@ vi.mock("three/examples/jsm/controls/OrbitControls.js", async () => {
     class FakeControls {
         readonly target = new Vector3();
         readonly camera: OrthographicCamera;
+        enabled = true;
         enablePan = true;
         minZoom = 0;
         cursorStyle = "";
@@ -63,8 +63,8 @@ vi.mock("three/examples/jsm/controls/OrbitControls.js", async () => {
             controls.push(this as unknown as Controls);
         }
 
-        addEventListener() {}
-        update() {}
+        addEventListener() { }
+        update() { }
 
         dispose() {
             this.disposed += 1;
@@ -76,12 +76,12 @@ vi.mock("three/examples/jsm/controls/OrbitControls.js", async () => {
 
 const OPTIONS: WalkOptions = { dimensions: 3, steps: 20, diagonals: false };
 
-function walkScene(stableLimits = true, tracks = walksFor(OPTIONS, 2, 1)) {
+function walkScene(stableLimits = true, tracks = walksFor(OPTIONS, 2, 1), bare = false) {
     const bounds = boundsFor(tracks).at(-1) ?? { min: [0, 0, 0], max: [0, 0, 0] };
 
     return (
         <ThemeProvider theme={createTheme()}>
-            <WalkScene tracks={tracks} bounds={bounds} upTo={20} stableLimits={stableLimits} />
+            <WalkScene tracks={tracks} bounds={bounds} upTo={20} stableLimits={stableLimits} bare={bare} />
         </ThemeProvider>
     );
 }
@@ -143,6 +143,16 @@ describe("WalkScene", () => {
         rerender(walkScene(true, tracks));
 
         expect(camera.zoom).toBe(6);
+    });
+
+    it("answers the pointer when it is there to be used", () => {
+        render(walkScene());
+        expect(only(controls).enabled).toBe(true);
+    });
+
+    it("ignores the pointer when it is only decoration", () => {
+        render(walkScene(true, walksFor(OPTIONS, 2, 1), true));
+        expect(only(controls).enabled).toBe(false);
     });
 
     it("gives back the context it took when it goes", () => {
